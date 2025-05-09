@@ -1,7 +1,9 @@
 from ursina import *
-
+import chess
+from chess import *
+from ursina.shaders import basic_lighting_shader, unlit_shader
 class ChessPiece(Entity):
-    def __init__(self, piece_type: str, kolor: str, position: str):
+    def __init__(self, piece_type: str, kolor: str, board_position: str):
         """
         Inicjalizuje figurę szachową.
 
@@ -21,7 +23,8 @@ class ChessPiece(Entity):
             'king': 'models/krol.obj',
             'pawn': 'models/pionek.obj',
         }
-        world_position = self._board_to_world(position)
+        self.board_position = board_position
+        world_position = self._board_to_world(board_position)
         obrot=180 if kolor == 'white' else 0
         super().__init__(
             model=self.piece_types[piece_type],
@@ -42,14 +45,15 @@ class ChessPiece(Entity):
             always_on_top=True
         )
         self.was_clicked = False
-    def _board_to_world(self,position: str) -> Vec3:
+        self.is_hovered = False
+    def _board_to_world(self,board_position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
         """
-        if position[0] not in 'abcdefgh' or position[1] not in '12345678':
+        if board_position[0] not in 'abcdefgh' or board_position[1] not in '12345678':
             raise ValueError("Invalid chess position")
-        x = -21+6*(ord(position[0]) - ord('a'))
-        y = -21+6*(int(position[1]) - 1)
+        x = -21+6*(ord(board_position[0]) - ord('a'))
+        y = -21+6*(int(board_position[1]) - 1)
         return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
     def hovered_piece(self):
         """
@@ -68,11 +72,39 @@ class ChessPiece(Entity):
             self.highlight.color = color.yellow
             self.highlight.alpha = 0.5
             self.was_clicked = True
+            return self.board_position
         else:
             # Przywrócenie oryginalnego koloru po kliknięciu poza figurę
             self.highlight.color = color.white
             self.highlight.alpha = 0
-            self.was_clicked = False  
+            self.was_clicked = False
+
+            
+
+
+
+
+class LegalMove(Entity):
+    def __init__(self, position: str):
+        super().__init__(
+            model='cube',
+            color=color.green,
+            position=self._board_to_world(position),
+            scale=1,
+            collider='box',
+            alpha=0.5,
+            shader = unlit_shader,
+        )
+    def _board_to_world(self,position: str) -> Vec3:
+        """
+        Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
+        """
+        if position[0] not in 'abcdefgh' or position[1] not in '12345678':
+            raise ValueError("Invalid chess position")
+        x = -21+6*(ord(position[0]) - ord('a'))
+        y = -21+6*(int(position[1]) - 1)
+        return Vec3(x, -4, y)  # Centruje planszę na (0,0,0)
+                    
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
         super().__init__('rook', kolor, position)
