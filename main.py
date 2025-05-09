@@ -2,8 +2,10 @@ from ursina import *
 from figury import *
 from board import *
 from importlib import import_module
+
 app = Ursina()
 DirectionalLight(position=(1, 1, 3), shadows=True, color=color.white)
+
 white_rook1 = Rook(color='white', position='a1')
 white_rook2 = Rook(color='white', position='h1')
 white_knight1 = Knight(color='white', position='b1')
@@ -20,6 +22,7 @@ white_pawn5 = Pawn(color='white', position='e2')
 white_pawn6 = Pawn(color='white', position='f2')
 white_pawn7 = Pawn(color='white', position='g2')
 white_pawn8 = Pawn(color='white', position='h2')
+
 black_rook1 = Rook(color='black', position='a8')
 black_rook2 = Rook(color='black', position='h8')
 black_knight1 = Knight(color='black', position='b8')
@@ -36,6 +39,7 @@ black_pawn5 = Pawn(color='black', position='e7')
 black_pawn6 = Pawn(color='black', position='f7')
 black_pawn7 = Pawn(color='black', position='g7')
 black_pawn8 = Pawn(color='black', position='h7')
+
 # Dodaj planszę szachową
 board = load_board()
 # Kamera

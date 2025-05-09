@@ -1,6 +1,7 @@
 from ursina import *
 
 class ChessPiece(Entity):
+    is_hovered = False
     def __init__(self, piece_type: str, color: str, position: str):
         """
         Inicjalizuje figurę szachową.
@@ -29,9 +30,12 @@ class ChessPiece(Entity):
             position=world_position,
             scale=1.0,
             rotation=(0, obrot, 0),
+            collider = 'box',
             #shader=basic_lighting_shader,
             #origin_y=-0.5  # Ustawienie na "podłodze"
         )
+
+
     def _board_to_world(self,position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -41,6 +45,23 @@ class ChessPiece(Entity):
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
         return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
+    
+
+    def raise_figure(self):
+        if self.hovered and self.is_hovered == False:
+            print(self.name)
+            self.position += self.up
+            self.is_hovered = True
+        if self.is_hovered and self.hovered == False:
+            self.position += self.down
+            self.is_hovered = False
+    
+
+    def update(self):
+        self.raise_figure()
+        self.rotate_piece()
+
+
 class Rook(ChessPiece):
     def __init__(self, color: str, position: str):
         super().__init__('rook', color, position)
