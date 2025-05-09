@@ -3,6 +3,7 @@ from ursina import *
 from figury import *
 from board import *
 from importlib import import_module
+
 app = Ursina()
 DirectionalLight(position=(1, 1, 3), shadows=True, kolor=color.white)
 white_rook1 = Rook(kolor='white', position='a1')
@@ -52,8 +53,8 @@ board = load_board()
 EditorCamera()
 
 # Update function to handle highlighting
-def update():
-    for piece in pieces:
-        piece.highlight_piece()  # Call the highlight logic for each piece
+# def update():
+#     for piece in pieces:
+#         piece.highlight_piece()  # Call the highlight logic for each piece
 
 app.run()

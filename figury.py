@@ -1,6 +1,7 @@
 from ursina import *
 
 class ChessPiece(Entity):
+    is_hovered = False
     def __init__(self, piece_type: str, kolor: str, position: str):
         """
         Inicjalizuje figurę szachową.
@@ -29,7 +30,8 @@ class ChessPiece(Entity):
             position=world_position,
             scale=1.0,
             rotation=(0, obrot, 0),
-            collider=self.piece_types[piece_type],
+            #collider=self.piece_types[piece_type],
+            collider = 'box'
             #shader=basic_lighting_shader,
             #origin_y=-0.5  # Ustawienie na "podłodze"
         )
@@ -58,6 +60,23 @@ class ChessPiece(Entity):
             self.highlight.alpha = 0.5  # Show highlight
         else:
             self.highlight.alpha = 0  # Hide highlight
+    
+
+    def raise_figure(self):
+        if self.hovered and self.is_hovered == False:
+            print(self.name)
+            self.position += self.up
+            self.is_hovered = True
+        if self.is_hovered and self.hovered == False:
+            self.position += self.down
+            self.is_hovered = False
+    
+
+    def update(self):
+        self.raise_figure()
+        self.highlight_piece()
+
+
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
         super().__init__('rook', kolor, position)
