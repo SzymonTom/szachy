@@ -2,10 +2,10 @@
 from ursina import *
 from figury import *
 from board import *
-from importlib import import_module
-
+import chess
 app = Ursina()
 DirectionalLight(position=(1, 1, 3), shadows=True, kolor=color.white)
+board = chess.Board()
 white_rook1 = Rook(kolor='white', position='a1')
 white_rook2 = Rook(kolor='white', position='h1')
 white_knight1 = Knight(kolor='white', position='b1')
@@ -47,14 +47,47 @@ pieces = [
     black_pawn5, black_pawn6, black_pawn7, black_pawn8
 ]
 # Add chessboard
-board = load_board()
+board_loaded = load_board()
+board = chess.Board()
+# Lista przechowująca wszystkie podświetlenia
+podswietl_entities = []
 
+def clear_highlight():
+    
+    global podswietl_entities
+    print(podswietl_entities)
+    for entity in podswietl_entities:
+        destroy(entity)
+    podswietl_entities = []
+
+if board is None:
+    print("Failed to load the chessboard model.")
 # Camera
 EditorCamera()
+# Globalna zmienna do przechowywania zaznaczonej figury
+def update():
+    for piece in pieces:
+        piece.hovered_piece()
+        if mouse.left:
+            position=piece.clicked_piece()
+            #TUTAJ MOŻNA SPRAWDZIĆ CZY ZAZNACZONO LEGALNY RUCH I PRZESUNĄĆ FIGURĘ
+            legal_moves_list = []
+            if position is not None:  # Dodaj sprawdzenie!
+                clear_highlight()
+                legal_moves_list=check_legal_moves(position)
+                for move in legal_moves_list:
+                    podswietl=LegalMove(move)
+                    podswietl_entities.append(podswietl)
 
-# Update function to handle highlighting
-# def update():
-#     for piece in pieces:
-#         piece.highlight_piece()  # Call the highlight logic for each piece
+def check_legal_moves(position):
+        square = chess.parse_square(position)
+        legal_moves = []
+        for move in board.legal_moves:
+            # Sprawdź, czy ruch dotyczy tej figury
+            if move.from_square == square:
+                move_to = chess.square_name(move.to_square)
+                legal_moves.append(move_to)
+        print(f"Legal moves for {position}: {legal_moves}")
+        return legal_moves
 
 app.run()
