@@ -41,6 +41,7 @@ class ChessPiece(Entity):
             alpha=0,
             always_on_top=True
         )
+        self.was_clicked = False
     def _board_to_world(self,position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -50,14 +51,28 @@ class ChessPiece(Entity):
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
         return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
-    def highlight_piece(self):
+    def hovered_piece(self):
         """
         Sprawdza, czy myszka znajduje się nad figurą, i podświetla ją.
         """
         if mouse.hovered_entity == self:
             self.highlight.alpha = 0.5  # Show highlight
-        else:
+        elif not self.was_clicked:
             self.highlight.alpha = 0  # Hide highlight
+    def clicked_piece(self):
+        """
+        Sprawdza, czy figura została kliknięta.
+        """
+        if mouse.hovered_entity == self:
+            # Zmiana koloru figury na żółty po kliknięciu
+            self.highlight.color = color.yellow
+            self.highlight.alpha = 0.5
+            self.was_clicked = True
+        else:
+            # Przywrócenie oryginalnego koloru po kliknięciu poza figurę
+            self.highlight.color = color.white
+            self.highlight.alpha = 0
+            self.was_clicked = False  
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
         super().__init__('rook', kolor, position)

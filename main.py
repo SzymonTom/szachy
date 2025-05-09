@@ -50,10 +50,16 @@ board = load_board()
 
 # Camera
 EditorCamera()
+# Globalna zmienna do przechowywania zaznaczonej figury
+selected_piece = None
+
 
 # Update function to handle highlighting
 def update():
     for piece in pieces:
-        piece.highlight_piece()  # Call the highlight logic for each piece
+        piece.hovered_piece()  # Call the highlight logic for each piece
+        if mouse.left :
+            piece.clicked_piece()
+
 
 app.run()
