@@ -1,8 +1,9 @@
 from ursina import *
-
+import chess
+from chess import *
+from ursina.shaders import basic_lighting_shader, unlit_shader
 class ChessPiece(Entity):
-    is_hovered = False
-    def __init__(self, piece_type: str, kolor: str, position: str):
+    def __init__(self, piece_type: str, kolor: str, board_position: str):
         """
         Inicjalizuje figurę szachową.
 
@@ -22,7 +23,8 @@ class ChessPiece(Entity):
             'king': 'models/krol.obj',
             'pawn': 'models/pionek.obj',
         }
-        world_position = self._board_to_world(position)
+        self.board_position = board_position
+        world_position = self._board_to_world(board_position)
         obrot=180 if kolor == 'white' else 0
         super().__init__(
             model=self.piece_types[piece_type],
@@ -30,8 +32,7 @@ class ChessPiece(Entity):
             position=world_position,
             scale=1.0,
             rotation=(0, obrot, 0),
-            #collider=self.piece_types[piece_type],
-            collider = 'box'
+            collider=self.piece_types[piece_type],
             #shader=basic_lighting_shader,
             #origin_y=-0.5  # Ustawienie na "podłodze"
         )
@@ -43,6 +44,57 @@ class ChessPiece(Entity):
             alpha=0,
             always_on_top=True
         )
+        self.was_clicked = False
+        self.is_hovered = False
+    def _board_to_world(self,board_position: str) -> Vec3:
+        """
+        Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
+        """
+        if board_position[0] not in 'abcdefgh' or board_position[1] not in '12345678':
+            raise ValueError("Invalid chess position")
+        x = -21+6*(ord(board_position[0]) - ord('a'))
+        y = -21+6*(int(board_position[1]) - 1)
+        return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
+    def hovered_piece(self):
+        """
+        Sprawdza, czy myszka znajduje się nad figurą, i podświetla ją.
+        """
+        if mouse.hovered_entity == self:
+            self.highlight.alpha = 0.5  # Show highlight
+        elif not self.was_clicked:
+            self.highlight.alpha = 0  # Hide highlight
+    def clicked_piece(self):
+        """
+        Sprawdza, czy figura została kliknięta.
+        """
+        if mouse.hovered_entity == self:
+            # Zmiana koloru figury na żółty po kliknięciu
+            self.highlight.color = color.yellow
+            self.highlight.alpha = 0.5
+            self.was_clicked = True
+            return self.board_position
+        else:
+            # Przywrócenie oryginalnego koloru po kliknięciu poza figurę
+            self.highlight.color = color.white
+            self.highlight.alpha = 0
+            self.was_clicked = False
+
+            
+
+
+
+
+class LegalMove(Entity):
+    def __init__(self, position: str):
+        super().__init__(
+            model='cube',
+            color=color.green,
+            position=self._board_to_world(position),
+            scale=1,
+            collider='box',
+            alpha=0.5,
+            shader = unlit_shader,
+        )
     def _board_to_world(self,position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -51,32 +103,8 @@ class ChessPiece(Entity):
             raise ValueError("Invalid chess position")
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
-        return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
-    def highlight_piece(self):
-        """
-        Sprawdza, czy myszka znajduje się nad figurą, i podświetla ją.
-        """
-        if mouse.hovered_entity == self:
-            self.highlight.alpha = 0.5  # Show highlight
-        else:
-            self.highlight.alpha = 0  # Hide highlight
-    
-
-    def raise_figure(self):
-        if self.hovered and self.is_hovered == False:
-            print(self.name)
-            self.position += self.up
-            self.is_hovered = True
-        if self.is_hovered and self.hovered == False:
-            self.position += self.down
-            self.is_hovered = False
-    
-
-    def update(self):
-        self.raise_figure()
-        self.highlight_piece()
-
-
+        return Vec3(x, -4, y)  # Centruje planszę na (0,0,0)
+                    
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
         super().__init__('rook', kolor, position)
