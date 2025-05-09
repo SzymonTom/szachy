@@ -53,8 +53,8 @@ board = load_board()
 EditorCamera()
 
 # Update function to handle highlighting
-def update():
-    for piece in pieces:
-        piece.highlight_piece()  # Call the highlight logic for each piece
+# def update():
+#     for piece in pieces:
+#         piece.highlight_piece()  # Call the highlight logic for each piece
 
 app.run()

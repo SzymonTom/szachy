@@ -30,7 +30,8 @@ class ChessPiece(Entity):
             position=world_position,
             scale=1.0,
             rotation=(0, obrot, 0),
-            collider=self.piece_types[piece_type],
+            #collider=self.piece_types[piece_type],
+            collider = 'box'
             #shader=basic_lighting_shader,
             #origin_y=-0.5  # Ustawienie na "podłodze"
         )
@@ -73,7 +74,7 @@ class ChessPiece(Entity):
 
     def update(self):
         self.raise_figure()
-        self.rotate_piece()
+        self.highlight_piece()
 
 
 class Rook(ChessPiece):
