@@ -78,19 +78,26 @@ class ChessPiece(Entity):
             self.highlight.color = color.white
             self.highlight.alpha = 0
             self.was_clicked = False
-
-            
+    def update_position(self, new_board_position: str):
+        """
+        Aktualizuje pozycję na planszy bez ponownego wywoływania __init__.
+        """
+        self.board_position = new_board_position
+        self.position = self._board_to_world(new_board_position)
+    def update(self):
+        self.hovered_piece()        
 
 
 
 
 class LegalMove(Entity):
-    def __init__(self, position: str):
+    def __init__(self, board_position: str):
+        self.board_position = board_position
         super().__init__(
             model='cube',
             color=color.green,
-            position=self._board_to_world(position),
-            scale=1,
+            position=self._board_to_world(board_position),
+            scale=6,
             collider='box',
             alpha=0.5,
             shader = unlit_shader,
@@ -103,8 +110,12 @@ class LegalMove(Entity):
             raise ValueError("Invalid chess position")
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
-        return Vec3(x, -4, y)  # Centruje planszę na (0,0,0)
-                    
+        return Vec3(x, -7, y)  # Centruje planszę na (0,0,0)
+    def clicked_piece(self):    
+        if mouse.hovered_entity == self:
+            return self.board_position
+
+
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
         super().__init__('rook', kolor, position)
