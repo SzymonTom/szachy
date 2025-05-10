@@ -64,7 +64,16 @@ if board is None:
 # Camera
 EditorCamera()
 # Globalna zmienna do przechowywania zaznaczonej figury
+pom_black = 0
+pom_white = 0
+pom_x_white =0
+pom_x_black = 0
+
 def update():
+    global pom_white
+    global pom_black
+    global pom_x_white
+    global pom_x_black
     if mouse.left:
         move_position = None
         for podswietlenie in podswietl_entities:
@@ -80,7 +89,27 @@ def update():
                     clear_highlight()
                     #move_position = None
                 elif piece.board_position == move_position:
-                    destroy(piece)
+                    if piece.texture.name == 'Dark_Mahony.jpg':
+                        x_aside = 33 + pom_x_black
+                        y_aside = -21
+                        y_aside += 4 * pom_black
+                        pom_black += 1
+                        piece.set_piece_aside(x_aside, y_aside)
+                        piece.board_position = '00'
+                        if pom_black == 7:
+                            pom_black = 0
+                            pom_x_black = 4
+                    elif piece.texture.name == 'Sapeli.jpg':
+                        x_aside = -33 - pom_x_white
+                        y_aside = +21
+                        y_aside -= 4 * pom_white
+                        pom_white += 1
+                        piece.set_piece_aside(x_aside, y_aside)
+                        piece.board_position = '00'
+                        if pom_white == 7:
+                            pom_white = 0
+                            pom_x_white = 4
+
             position=piece.clicked_piece()
             legal_moves_list = []
             if position is not None:  # Dodaj sprawdzenie!

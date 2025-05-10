@@ -19,8 +19,8 @@ class ChessPiece(Entity):
             'rook': 'models/wieza.obj',
             'knight': 'models/kon.obj',
             'bishop': 'models/goniec.obj',
-            'queen': 'models/krolowa.obj',
-            'king': 'models/krol.obj',
+            'queen': 'models/krol.obj',
+            'king': 'models/krolowa.obj',
             'pawn': 'models/pionek.obj',
         }
         self.board_position = board_position
@@ -84,6 +84,16 @@ class ChessPiece(Entity):
         """
         self.board_position = new_board_position
         self.position = self._board_to_world(new_board_position)
+
+
+    def set_piece_aside(self, x_aside: int, y_aside: int):
+        self.position = Vec3(x_aside, -1.5, y_aside)
+
+
+    def get_kolor(self):
+        return self.kolor
+
+
     def update(self):
         self.hovered_piece()        
 
@@ -97,7 +107,9 @@ class LegalMove(Entity):
             model='cube',
             color=color.green,
             position=self._board_to_world(board_position),
-            scale=6,
+            scale_x=6,
+            scale_y=0.1,
+            scale_z=6,
             collider='box',
             alpha=0.5,
             shader = unlit_shader,
@@ -110,7 +122,7 @@ class LegalMove(Entity):
             raise ValueError("Invalid chess position")
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
-        return Vec3(x, -7, y)  # Centruje planszę na (0,0,0)
+        return Vec3(x+0.115, -4.7, y-0.045)  # Centruje planszę na (0,0,0)
     def clicked_piece(self):    
         if mouse.hovered_entity == self:
             return self.board_position
