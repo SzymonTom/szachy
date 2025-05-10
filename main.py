@@ -55,7 +55,6 @@ podswietl_entities = []
 def clear_highlight():
     
     global podswietl_entities
-    print(podswietl_entities)
     for entity in podswietl_entities:
         destroy(entity)
     podswietl_entities = []
@@ -66,11 +65,23 @@ if board is None:
 EditorCamera()
 # Globalna zmienna do przechowywania zaznaczonej figury
 def update():
-    for piece in pieces:
-        piece.hovered_piece()
-        if mouse.left:
+    if mouse.left:
+        move_position = None
+        for podswietlenie in podswietl_entities:
+            if podswietlenie.clicked_piece() is not None:
+                move_position = podswietlenie.clicked_piece()
+        #print(move_position)
+        for piece in pieces:
+            if move_position is not None:
+                if piece.was_clicked:
+                    board.push(chess.Move.from_uci(piece.board_position+move_position))
+                    piece.update_position(move_position)
+                    piece.was_clicked = False
+                    clear_highlight()
+                    #move_position = None
+                elif piece.board_position == move_position:
+                    destroy(piece)
             position=piece.clicked_piece()
-            #TUTAJ MOŻNA SPRAWDZIĆ CZY ZAZNACZONO LEGALNY RUCH I PRZESUNĄĆ FIGURĘ
             legal_moves_list = []
             if position is not None:  # Dodaj sprawdzenie!
                 clear_highlight()
@@ -78,7 +89,8 @@ def update():
                 for move in legal_moves_list:
                     podswietl=LegalMove(move)
                     podswietl_entities.append(podswietl)
-
+    
+        
 def check_legal_moves(position):
         square = chess.parse_square(position)
         legal_moves = []
@@ -87,7 +99,6 @@ def check_legal_moves(position):
             if move.from_square == square:
                 move_to = chess.square_name(move.to_square)
                 legal_moves.append(move_to)
-        print(f"Legal moves for {position}: {legal_moves}")
         return legal_moves
 
 app.run()
