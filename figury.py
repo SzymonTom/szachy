@@ -2,7 +2,12 @@ from ursina import *
 import chess
 from chess import *
 from ursina.shaders import basic_lighting_shader, unlit_shader
+
+zaznaczony_pion = None
+
 class ChessPiece(Entity):
+
+
     def __init__(self, piece_type: str, kolor: str, board_position: str):
         """
         Inicjalizuje figurę szachową.
@@ -45,7 +50,9 @@ class ChessPiece(Entity):
             always_on_top=True
         )
         self.was_clicked = False
-        self.is_hovered = False
+        self.on_click = self.klik
+
+
     def _board_to_world(self,board_position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -55,6 +62,8 @@ class ChessPiece(Entity):
         x = -21+6*(ord(board_position[0]) - ord('a'))
         y = -21+6*(int(board_position[1]) - 1)
         return Vec3(x, 0, y)  # Centruje planszę na (0,0,0)
+    
+
     def hovered_piece(self):
         """
         Sprawdza, czy myszka znajduje się nad figurą, i podświetla ją.
@@ -63,21 +72,31 @@ class ChessPiece(Entity):
             self.highlight.alpha = 0.5  # Show highlight
         elif not self.was_clicked:
             self.highlight.alpha = 0  # Hide highlight
+
+
     def clicked_piece(self):
-        """
-        Sprawdza, czy figura została kliknięta.
-        """
         if mouse.hovered_entity == self:
-            # Zmiana koloru figury na żółty po kliknięciu
-            self.highlight.color = color.yellow
-            self.highlight.alpha = 0.5
-            self.was_clicked = True
             return self.board_position
-        else:
-            # Przywrócenie oryginalnego koloru po kliknięciu poza figurę
-            self.highlight.color = color.white
-            self.highlight.alpha = 0
-            self.was_clicked = False
+    
+
+    def klik(self):
+        global zaznaczony_pion
+
+        if zaznaczony_pion and zaznaczony_pion != self:
+            zaznaczony_pion.un_klik()
+
+        self.highlight.color = color.yellow
+        self.highlight.alpha = 0.5
+        self.was_clicked = True
+        zaznaczony_pion = self
+
+
+    def un_klik(self):
+        self.was_clicked = False
+        self.highlight.color = color.white
+        self.highlight.alpha = 0
+
+
     def update_position(self, new_board_position: str):
         """
         Aktualizuje pozycję na planszy bez ponownego wywoływania __init__.
@@ -89,18 +108,27 @@ class ChessPiece(Entity):
     def set_piece_aside(self, x_aside: int, y_aside: int):
         self.position = Vec3(x_aside, -1.5, y_aside)
 
+    
+    def is_clicked(self):
+        #print(self.was_clicked)
+        return self.was_clicked
+
 
     def get_kolor(self):
         return self.kolor
 
 
     def update(self):
-        self.hovered_piece()        
+        self.hovered_piece()
+        if self.board_position == '00':
+            self.collider = None
 
 
 
 
 class LegalMove(Entity):
+
+
     def __init__(self, board_position: str):
         self.board_position = board_position
         super().__init__(
@@ -114,6 +142,8 @@ class LegalMove(Entity):
             alpha=0.5,
             shader = unlit_shader,
         )
+
+
     def _board_to_world(self,position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -123,6 +153,8 @@ class LegalMove(Entity):
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
         return Vec3(x+0.115, -4.7, y-0.045)  # Centruje planszę na (0,0,0)
+    
+
     def clicked_piece(self):    
         if mouse.hovered_entity == self:
             return self.board_position

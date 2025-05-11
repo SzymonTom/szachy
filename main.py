@@ -118,6 +118,16 @@ def update():
                 for move in legal_moves_list:
                     podswietl=LegalMove(move)
                     podswietl_entities.append(podswietl)
+
+
+def input(key):
+    global zaznaczony_pion
+
+    if key == 'left mouse down':
+        if not mouse.hovered_entity or not isinstance(mouse.hovered_entity, ChessPiece):
+            if zaznaczony_pion:
+                zaznaczony_pion.un_klik()       #Prace w toku. Cos nie chce sie globalna zmienna przesłać chyba. Bo globalna miała przechowywać zaznaczonego pionka i tutaj mial sie usuwac jak klikniesz gdzies indziej.
+                zaznaczony_pion = None
     
         
 def check_legal_moves(position):
