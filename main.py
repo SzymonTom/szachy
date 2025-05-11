@@ -86,6 +86,8 @@ def update():
                 if piece.was_clicked:
                     board.push(chess.Move.from_uci(piece.board_position+move_position))
                     piece.update_position(move_position)
+                    piece.un_klik()
+                    piece.zaznaczony_pion = None
                     #piece.was_clicked = False
                     clear_highlight()
                     #move_position = None
@@ -99,13 +101,14 @@ def update():
 
 
 def input(key):
-    global zaznaczony_pion
+    zaznaczony_pion = pieces[0].pobierz_zaznaczony_pion()
 
     if key == 'left mouse down':
-        if not mouse.hovered_entity or not isinstance(mouse.hovered_entity, ChessPiece):
+        if not mouse.hovered_entity:
             if zaznaczony_pion:
                 zaznaczony_pion.un_klik()       #Prace w toku. Cos nie chce sie globalna zmienna przesłać chyba. Bo globalna miała przechowywać zaznaczonego pionka i tutaj mial sie usuwac jak klikniesz gdzies indziej.
                 zaznaczony_pion = None
+                clear_highlight()
 
 
 def highlight_squares(position):

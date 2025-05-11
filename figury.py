@@ -96,6 +96,10 @@ class ChessPiece(Entity):
         self.was_clicked = False
         self.highlight.color = color.white
         self.highlight.alpha = 0
+    
+
+    def pobierz_zaznaczony_pion(self):
+        return zaznaczony_pion
 
 
     def update_position(self, new_board_position: str):
