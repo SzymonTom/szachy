@@ -5,6 +5,8 @@ from board import *
 import chess
 app = Ursina()
 DirectionalLight(position=(1, 1, 3), shadows=True, kolor=color.white)
+
+
 board = chess.Board()
 white_rook1 = Rook(kolor='white', position='a1')
 white_rook2 = Rook(kolor='white', position='h1')
@@ -66,58 +68,34 @@ EditorCamera()
 # Globalna zmienna do przechowywania zaznaczonej figury
 pom_black = 0
 pom_white = 0
-pom_x_white =0
+pom_x_white = 0
 pom_x_black = 0
-
+#global clicked_piece_position
+clicked_piece_position = None
 def update():
-    global pom_white
-    global pom_black
-    global pom_x_white
-    global pom_x_black
-    if mouse.left:
+    global clicked_piece_position
+    if mouse.left:    
         move_position = None
         for podswietlenie in podswietl_entities:
-            if podswietlenie.clicked_piece() is not None:
-                move_position = podswietlenie.clicked_piece()
-        #print(move_position)
+            if podswietlenie.clicked_square() is not None and clicked_piece_position is not None:
+                move_position = podswietlenie.clicked_square()
+                destroy_position = is_capture(clicked_piece_position, move_position)
+                castling_position,castle_from = is_castle(clicked_piece_position, move_position)
         for piece in pieces:
             if move_position is not None:
                 if piece.was_clicked:
                     board.push(chess.Move.from_uci(piece.board_position+move_position))
                     piece.update_position(move_position)
-                    piece.was_clicked = False
+                    #piece.was_clicked = False
                     clear_highlight()
                     #move_position = None
-                elif piece.board_position == move_position:
-                    if piece.texture.name == 'Dark_Mahony.jpg':
-                        x_aside = 33 + pom_x_black
-                        y_aside = -21
-                        y_aside += 4 * pom_black
-                        pom_black += 1
-                        piece.set_piece_aside(x_aside, y_aside)
-                        piece.board_position = '00'
-                        if pom_black == 7:
-                            pom_black = 0
-                            pom_x_black = 4
-                    elif piece.texture.name == 'Sapeli.jpg':
-                        x_aside = -33 - pom_x_white
-                        y_aside = +21
-                        y_aside -= 4 * pom_white
-                        pom_white += 1
-                        piece.set_piece_aside(x_aside, y_aside)
-                        piece.board_position = '00'
-                        if pom_white == 7:
-                            pom_white = 0
-                            pom_x_white = 4
-
+                elif piece.board_position == destroy_position:
+                    capture_piece(piece)
+                elif piece.board_position == castle_from:
+                    piece.update_position(castling_position)
             position=piece.clicked_piece()
-            legal_moves_list = []
-            if position is not None:  # Dodaj sprawdzenie!
-                clear_highlight()
-                legal_moves_list=check_legal_moves(position)
-                for move in legal_moves_list:
-                    podswietl=LegalMove(move)
-                    podswietl_entities.append(podswietl)
+            clicked_piece_position = position if position is not None else clicked_piece_position
+            highlight_squares(position)
 
 
 def input(key):
@@ -128,8 +106,19 @@ def input(key):
             if zaznaczony_pion:
                 zaznaczony_pion.un_klik()       #Prace w toku. Cos nie chce sie globalna zmienna przesłać chyba. Bo globalna miała przechowywać zaznaczonego pionka i tutaj mial sie usuwac jak klikniesz gdzies indziej.
                 zaznaczony_pion = None
-    
-        
+
+
+def highlight_squares(position):
+    legal_moves_list = []   
+    if position is not None:  # Dodaj sprawdzenie!
+        clicked_piece_position = position
+        clear_highlight()
+        legal_moves_list=check_legal_moves(position)
+        for move in legal_moves_list:
+            podswietl=LegalMove(move)
+            podswietl_entities.append(podswietl)
+    return legal_moves_list    
+
 def check_legal_moves(position):
         square = chess.parse_square(position)
         legal_moves = []
@@ -140,4 +129,56 @@ def check_legal_moves(position):
                 legal_moves.append(move_to)
         return legal_moves
 
+def is_capture(clicked_piece_position, move_position):
+    """
+    Funkcja do sprawdzania czy ruch jest biciem.
+    """
+    if board.is_en_passant(chess.Move.from_uci(clicked_piece_position+move_position)):
+        destroy_position = move_position[0] + str(int(move_position[1]) - 1)
+    else: destroy_position = move_position
+    return destroy_position
+
+def is_castle(clicked_piece_position, move_position):
+    """
+    Funkcja do sprawdzania czy ruch jest roszadą.
+    """
+    castle_position = None
+    castle_from = None
+    if board.is_castling(chess.Move.from_uci(clicked_piece_position+move_position)):
+        if move_position[0] == 'c':
+            castle_position = 'd'+ move_position[1]
+            castle_from = 'a' + move_position[1]
+        elif move_position[0] == 'g':
+            castle_position = 'f'+ move_position[1] 
+            castle_from = 'h' + move_position[1]
+    return castle_position, castle_from
+
+def capture_piece(piece):
+    """
+    Funkcja do usuwania figury z planszy.
+    """
+    global pom_white
+    global pom_black
+    global pom_x_white
+    global pom_x_black
+    if piece.kolor == 'black':
+        x_aside = 33 + pom_x_black
+        y_aside = -21
+        y_aside += 4 * pom_black
+        pom_black += 1
+        piece.set_piece_aside(x_aside, y_aside)
+        piece.board_position = '00'
+        if pom_black == 7:
+            pom_black = 0
+            pom_x_black = 4
+    elif piece.kolor == 'white':
+        x_aside = -33 - pom_x_white
+        y_aside = +21
+        y_aside -= 4 * pom_white
+        pom_white += 1
+        piece.set_piece_aside(x_aside, y_aside)
+        piece.board_position = '00'
+        if pom_white == 7:
+            pom_white = 0
+            pom_x_white = 4
 app.run()
