@@ -56,9 +56,7 @@ class ChessPiece(Entity):
         self.on_click = self.klik
 
     def promote(self, type: str):
-        print("PROMOTE PAWN")
         self.piece_type = type
-        print(self.piece_type)
         model = self.piece_types[type]
         self.model = model
         self.highlight.model = model
@@ -125,7 +123,6 @@ class ChessPiece(Entity):
 
     
     def is_clicked(self):
-        #print(self.was_clicked)
         return self.was_clicked
 
 
@@ -147,7 +144,7 @@ class PromotionButtons(Entity):
     def __init__(self, piece: ChessPiece, **kwargs):
         
         super().__init__(parent=camera.ui, **kwargs)  # Poprawione parent=self
-        print("weszlo do promocji")
+    
         
         # Tło menu promocji
         self.background = Entity(
@@ -208,8 +205,9 @@ class PromotionButtons(Entity):
         )
     def promote(self,piece, type: str):
         # Tutaj dodaj logikę promocji pionka
-        
+        piece.promote(type)
         self.disable()  # Wyłącz menu promocji po kliknięciu
+
 
 class Rook(ChessPiece):
     def __init__(self, kolor: str, position: str):
