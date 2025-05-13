@@ -3,6 +3,7 @@ from ursina import *
 from figury import *
 from board import *
 import chess
+
 app = Ursina()
 DirectionalLight(position=(1, 1, 3), shadows=True, kolor=color.white)
 EditorCamera()
@@ -25,22 +26,16 @@ def update():
     if mouse.left and not board.is_game_over():    
         move_position = None
         for podswietlenie in podswietl_entities:
-            if podswietlenie.clicked_square() is not None and clicked_piece is not None:
+            if podswietlenie.clicked_square() is not None and clicked_piece is not None and move_position is None:
                 move_position = podswietlenie.clicked_square()
                 destroy_position = is_capture(clicked_piece, move_position)
                 castling_position,castle_from = is_castle(clicked_piece.board_position, move_position)
         for piece in pieces:
-            if move_position is not None:
+            if not piece.board_position == '00' and not board.piece_at(chess.parse_square(piece.board_position)).piece_type == get_piece_type_num(piece):
+                    make_promotion(piece)
+            elif move_position is not None:
                 if piece.was_clicked:
-                    promotion_piece = ""
-                    if is_promotion(piece, move_position):
-                        PromotionButtons(piece)
-                        
-                        if piece.kolor == 'white':
-                            promotion_piece = get_piece_type(piece)    
-                        else: 
-                            promotion_piece = get_piece_type(piece).upper()
-                    move_piece(piece, move_position,promotion_piece)
+                    move_piece(piece, move_position)
                 elif piece.board_position == destroy_position:
                     capture_piece(piece)
                 elif piece.board_position == castle_from:
@@ -53,32 +48,37 @@ def update():
             game_over()
             end = False
 
-        
-def is_promotion(piece, move_position):
-    print("sprawdzam")
-    if piece.piece_type == 'pawn':
-        if piece.kolor == 'white' and move_position[1] == '8':
-            print("White promotion")
-            return True
-        elif piece.kolor == 'black' and move_position[1] == '1':
-            print("Black promotion")
-            return True
+
+
+def make_promotion(piece):
+    board.set_piece_at(chess.parse_square(piece.board_position), chess.Piece.from_symbol(get_piece_type_letter(piece)))
+
+def is_promotion(piece,move_position):
+    if piece.kolor == 'white' and move_position[1] == '8' and piece.piece_type == 'pawn':
+        return True
+    elif piece.kolor == 'black' and move_position[1] == '1' and piece.piece_type == 'pawn':
+        return True
     return False
 
-def move_piece(piece, move_position,promotion_piece):
-    print(piece.piece_type)
-    board.push(chess.Move.from_uci(piece.board_position+move_position+promotion_piece))
+def move_piece(piece, move_position):
+    if is_promotion(piece,move_position):
+        PromotionButtons(piece)
+    board.push(chess.Move.from_uci(piece.board_position+move_position))
     piece.update_position(move_position)
     piece.un_klik()
     piece.zaznaczony_pion = None
     piece.was_clicked = False
     clear_highlight()
 
-def get_piece_type(piece):
-    return 'q' if piece.piece_type == 'queen' else \
-           'r' if piece.piece_type == 'rook' else \
-           'b' if piece.piece_type == 'bishop' else \
-           'n' if piece.piece_type == 'knight' else ""
+def get_piece_type_letter(piece):
+    piece_type = 'q' if piece.piece_type == 'queen' else 'r' if piece.piece_type == 'rook' else 'b' if piece.piece_type == 'bishop' else 'n' if piece.piece_type == 'knight' else 'p' if piece.piece_type == 'pawn' else 'k' if piece.piece_type == 'king' else None
+    if piece.kolor == 'white':
+        piece_type = piece_type.upper()
+    return piece_type
+
+def get_piece_type_num(piece):
+    piece_type = 5 if piece.piece_type == 'queen' else 4 if piece.piece_type == 'rook' else 3 if piece.piece_type == 'bishop' else 2 if piece.piece_type == 'knight' else 1 if piece.piece_type == 'pawn' else 6 if piece.piece_type == 'king' else None
+    return piece_type
 def game_over():
             result = board.outcome()
             if board.is_checkmate():
@@ -103,7 +103,6 @@ def game_over():
             )
 
 def clear_highlight():
-    
     global podswietl_entities
     for entity in podswietl_entities:
         destroy(entity)
@@ -113,7 +112,6 @@ def clear_highlight():
 def highlight_squares(position):
     legal_moves_list = []   
     if position is not None:  # Dodaj sprawdzenie!
-        clicked_piece_position = position
         clear_highlight()
         legal_moves_list=check_legal_moves(position)
         for move in legal_moves_list:
@@ -184,4 +182,5 @@ def capture_piece(piece):
         if pom_white == 7:
             pom_white = 0
             pom_x_white = 4
+            
 app.run()
