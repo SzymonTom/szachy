@@ -135,8 +135,13 @@ def highlight_squares(position):
         clear_highlight()
         legal_moves_list=check_legal_moves(position)
         for move in legal_moves_list:
-            podswietl=LegalMove(move)
+            podswietl=LegalMove(move, 'cube', 6, 0.1, 6, 0, 0, 0, 0)
             podswietl_entities.append(podswietl)
+            for piece in pieces:
+                if piece.board_position == move:
+                    obrot=180 if piece.kolor == 'white' else 0
+                    podswietl=LegalMove(move, piece.model.name, 1.1, 1.01, 1.1, obrot, -0.1149, 0.0445, 4.7)
+                    podswietl_entities.append(podswietl)
     return legal_moves_list   
 
 

@@ -14,6 +14,7 @@ def load_board():
     board_3 = Entity(
     model='ciemna_rama.obj',
     texture='Dark_Mahony.jpg',
+    collider='ciemna_rama.obj',
     scale=1
     )
     stol = Entity(
@@ -21,6 +22,7 @@ def load_board():
     texture='stol1.jpg',
     scale=2,
     position=(-30, -90, 20),
+    collider='stol.obj'
     )
 
 
@@ -31,15 +33,19 @@ def load_board():
 class LegalMove(Entity):
 
 
-    def __init__(self, board_position: str):
+    def __init__(self, board_position: str, modele: str, x, y, z, obrot, dx, dy, dz):
         self.board_position = board_position
+        self.dx = dx
+        self.dy = dy
+        self.dz = dz
         super().__init__(
-            model='cube',
+            model=modele,
             color=color.green,
             position=self._board_to_world(board_position),
-            scale_x=6,
-            scale_y=0.1,
-            scale_z=6,
+            scale_x=x,
+            scale_y=y,
+            scale_z=z,
+            rotation=(0, obrot, 0),
             collider='box',
             alpha=0.5,
             shader = unlit_shader,
@@ -54,7 +60,7 @@ class LegalMove(Entity):
             raise ValueError("Invalid chess position")
         x = -21+6*(ord(position[0]) - ord('a'))
         y = -21+6*(int(position[1]) - 1)
-        return Vec3(x+0.115, -4.7, y-0.045)  # Centruje planszę na (0,0,0)
+        return Vec3(x+0.115 + self.dx, -4.7+self.dz, y-0.045 + self.dy)  # Centruje planszę na (0,0,0)
     
 
     def clicked_square(self):    
