@@ -1,7 +1,7 @@
 .venv
-/__pycache__/board.cpython-311.pyc
-/__pycache__/figury.cpython-311.pyc
+__pycache__
 /models_compressed/ciemna_rama.bam
 /models_compressed/jasna_kratka.bam
 /models_compressed/jasna_rama.bam
 *.swp
+/models_compressed/stol.bam

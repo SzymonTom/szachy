@@ -55,6 +55,7 @@ class ChessPiece(Entity):
         self.was_clicked = False
         self.on_click = self.klik
 
+
     def promote(self, type: str):
         self.piece_type = type
         model = self.piece_types[type]
@@ -62,6 +63,8 @@ class ChessPiece(Entity):
         self.highlight.model = model
         self.collider = model
         self.promotion_clicked = True
+
+    
     def _board_to_world(self,board_position: str) -> Vec3:
         """
         Konwertuje pozycję szachową (np. 'e4') na współrzędne 3D.
@@ -141,11 +144,12 @@ class ChessPiece(Entity):
 
 class PromotionButtons(Entity):
     
-    def __init__(self, piece: ChessPiece, **kwargs):
+    def __init__(self, piece: ChessPiece, board, move_position, **kwargs):
         
         super().__init__(parent=camera.ui, **kwargs)  # Poprawione parent=self
     
-        
+        self.board = board
+        self.move_position = move_position
         # Tło menu promocji
         self.background = Entity(
             parent=self,
@@ -171,7 +175,7 @@ class PromotionButtons(Entity):
             text_color=color.white,
             y=0,
             scale=(0.3, 0.1),
-            on_click=lambda: self.promote(piece, 'queen')  # Dodany brakujący nawias
+            on_click=lambda: self.promote1(piece, 'queen')  # Dodany brakujący nawias
         )
 
         self.Rook_button = Button(
@@ -181,7 +185,7 @@ class PromotionButtons(Entity):
             text_color=color.white,
             y=-0.15,
             scale=(0.3, 0.1),
-            on_click=lambda: self.promote(piece, 'rook')  # Dodany brakujący nawias
+            on_click=lambda: self.promote1(piece, 'rook')  # Dodany brakujący nawias
         )
 
         self.Bishop_button = Button(
@@ -191,7 +195,7 @@ class PromotionButtons(Entity):
             text_color=color.white,
             y=-0.3,
             scale=(0.3, 0.1),
-            on_click=lambda: self.promote(piece, 'bishop')  # Dodany brakujący nawias
+            on_click=lambda: self.promote1(piece, 'bishop')  # Dodany brakujący nawias
         )
 
         self.Knight_button = Button(
@@ -201,11 +205,21 @@ class PromotionButtons(Entity):
             text_color=color.white,
             y=-0.45,
             scale=(0.3, 0.1),
-            on_click=lambda: self.promote(piece, 'knight')  # Dodany brakujący nawias
+            on_click=lambda: self.promote1(piece, 'knight')  # Dodany brakujący nawias
         )
-    def promote(self,piece, type: str):
+
+
+    def get_piece_type_letter(self, piece):
+        piece_type = 'q' if piece.piece_type == 'queen' else 'r' if piece.piece_type == 'rook' else 'b' if piece.piece_type == 'bishop' else 'n' if piece.piece_type == 'knight' else 'p' if piece.piece_type == 'pawn' else 'k' if piece.piece_type == 'king' else None
+        if piece.kolor == 'white':
+            piece_type = piece_type.upper()
+        return piece_type
+
+
+    def promote1(self,piece, type: str):
         # Tutaj dodaj logikę promocji pionka
         piece.promote(type)
+        self.board.set_piece_at(chess.parse_square(self.move_position), chess.Piece.from_symbol(self.get_piece_type_letter(piece)))
         self.disable()  # Wyłącz menu promocji po kliknięciu
 
 
